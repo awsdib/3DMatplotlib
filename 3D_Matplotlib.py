@@ -1,3 +1,4 @@
+import ogr, osr
 import os, sys
 from osgeo import gdal
 import numpy as np
@@ -41,12 +42,12 @@ def plot_dem(path):
     #Get the first band
     Band   = Image.GetRasterBand(1) # 1 based, for this example only the first
     NoData = Band.GetNoDataValue()  # this might be important later
-
+     
     # Get raster extent
-    nBands = Image.RasterCount      # how many bands, to help you loop
     nRows  = Image.RasterYSize      # how many rows
     nCols  = Image.RasterXSize      # how many columns
 
+    
     RowRange = range(0,nRows,2000)
     Cells    = range(0,nCols,2000)
 
@@ -57,7 +58,6 @@ def plot_dem(path):
 
     # iterating through all rows 
     for ThisRow in RowRange:
-
         # Read data line by line is better for performance on large datasets
         ThisLine = Band.ReadAsArray(0,ThisRow,nCols,1).astype(np.float)
 
@@ -68,12 +68,13 @@ def plot_dem(path):
         #iterating through cells and extracting coordinates and elevation values
         for ThisCell in Cells:
             Val = ThisLine[0].item(ThisCell)
-            x.append(ThisRow)
-            y.append(ThisCell)
-            z.append(Val)
-                
+            if( (Val>12) & (Val != NoData) ):
+                x.append(ThisRow)
+                y.append(ThisCell)
+                z.append(Val)
+    
     # setting interpolation variables for constructing the surface
-    spline = sp.interpolate.Rbf(x,y,z,function='thin-plate')
+    spline = sp.interpolate.Rbf(x,y,z,function='linear')
     xi = np.linspace(min(x), max(x))
     yi = np.linspace(min(y), max(y))
     X, Y = np.meshgrid(xi, yi)
@@ -82,7 +83,10 @@ def plot_dem(path):
 
     fig = plt.figure()
     ax = Axes3D(fig)
-    ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.jet,linewidth=1, antialiased=True)
+    ax.set_zlim(12,800)
+    sur = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.jet,linewidth=1, antialiased=True)
+    
+    plt.colorbar(sur)
     plt.show()
 
 
@@ -136,7 +140,8 @@ def plot_track(path, fieldName, timeFormat):
     plt.show()
 
 
+###############
 # Main
-
+###############
 plot_dem(DEM_path)
 plot_track(Track_path, field_Name, time_Format)
