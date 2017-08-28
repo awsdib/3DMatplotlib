@@ -17,10 +17,16 @@ import datetime
 from datetime import datetime, time,date
 
 
-
+# the path for the raster data
 DEM_path = "E:\\Geo\\GermanyDGM1\\dgm1_5meter.img"
+
+# the path for the vector data
 Track_path = "E:\\_SOSE2017\\PIG\\Python and ArcGIS\\ArcGIS-Data - matplotlib\\track_reprojected.shp"
+
+# the name of the field in the vector data's attribute table which contains the time 
 field_Name = "datetime"
+
+# the format used to parse time value
 time_Format = '%Y-%m-%dT%H:%M:%SZ'
 
 
@@ -47,7 +53,7 @@ def plot_dem(path):
     nRows  = Image.RasterYSize      # how many rows
     nCols  = Image.RasterXSize      # how many columns
 
-    
+    # Specifying reading extent and down-samplying by skipping 2000 rows and columns at each read
     RowRange = range(0,nRows,2000)
     Cells    = range(0,nCols,2000)
 
@@ -59,7 +65,7 @@ def plot_dem(path):
     # iterating through all rows 
     for ThisRow in RowRange:
         # Read data line by line is better for performance on large datasets
-        ThisLine = Band.ReadAsArray(0,ThisRow,nCols,1).astype(np.float)
+        ThisLine = Band.ReadAsArray(0,ThisRow,nCols,1)
 
         # report every 100 lines
         if ThisRow % 100 == 0: 
@@ -143,5 +149,9 @@ def plot_track(path, fieldName, timeFormat):
 ###############
 # Main
 ###############
+
 plot_dem(DEM_path)
+
 plot_track(Track_path, field_Name, time_Format)
+
+
